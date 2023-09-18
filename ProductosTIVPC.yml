@@ -1,0 +1,248 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'VPC Template'
+
+Parameters:
+
+  TemplateTag:
+    Type: String
+    Default: MainVPC
+
+Resources:
+# --------------------------------------------------------------------------------------YPC----------------------------------------------------------------------------------------------------------------------------------------------
+
+  MainVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: '172.23.0.0/16'
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags: 
+        - Key: "Name"
+          Value: "MainVPCTI"
+        - Key: template
+          Value: !Ref TemplateTag
+
+
+# --------------------------------------------------------------------------------------Public subnets----------------------------------------------------------------------------------------------------------------------------------------------
+
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+
+  AttachGateway:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref MainVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref MainVPC
+      Tags:
+      - Key: template
+        Value: !Ref TemplateTag
+
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetA:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MainVPC
+      CidrBlock: '172.23.0.0/20'
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: 
+        Fn::Select :
+          - 0 
+          - Fn::GetAZs: ""
+      Tags: 
+        - Key: "Name"
+          Value: "SubnetA"
+        - Key: template
+          Value: !Ref TemplateTag
+
+  PublicSubnetB:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MainVPC
+      CidrBlock: '172.23.16.0/20'
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: 
+        Fn::Select :
+          - 1 
+          - Fn::GetAZs: ""
+      Tags: 
+        - Key: "Name"
+          Value: "SubnetB"
+        - Key: template
+          Value: !Ref TemplateTag
+
+
+  PublicSubnet1RouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2RouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnetB
+      RouteTableId: !Ref PublicRouteTable
+
+# --------------------------------------------------------------------------------------Private Subnets----------------------------------------------------------------------------------------------------------------------------------------------
+
+  PrivateSubnetC:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MainVPC
+      CidrBlock: '172.23.32.0/20'
+      AvailabilityZone: 
+        Fn::Select :
+          - 0 
+          - Fn::GetAZs: ""
+      Tags: 
+        - Key: "Name"
+          Value: "SubnetC"
+        - Key: template
+          Value: !Ref TemplateTag
+
+  PrivateSubnetD:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MainVPC
+      CidrBlock: '172.23.48.0/20'
+      AvailabilityZone: 
+        Fn::Select :
+          - 0
+          - Fn::GetAZs: ""
+      Tags: 
+        - Key: "Name"
+          Value: "SubnetD"
+        - Key: template
+          Value: !Ref TemplateTag
+
+  PrivateSubnetE:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MainVPC
+      CidrBlock: '172.23.64.0/20'
+      AvailabilityZone: 
+        Fn::Select :
+          - 1
+          - Fn::GetAZs: ""
+      Tags: 
+        - Key: "Name"
+          Value: "SubnetE"
+        - Key: template
+          Value: !Ref TemplateTag
+
+  PrivateSubnetF:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MainVPC
+      CidrBlock: '172.23.80.0/20'
+      AvailabilityZone: 
+        Fn::Select :
+          - 1 
+          - Fn::GetAZs: ""
+      Tags: 
+        - Key: "Name"
+          Value: "SubnetF"
+        - Key: template
+          Value: !Ref TemplateTag
+
+
+  PrivateRouteTable0:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !Ref MainVPC
+      Tags:
+      - Key: template
+        Value: !Ref TemplateTag
+
+
+  PrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !Ref MainVPC
+      Tags:
+      - Key: template
+        Value: !Ref TemplateTag
+
+# --------------------------------------------------------------------------------------Security Groups----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+  SGForTesting:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'SG de Testing'
+      GroupName: 'TestingSG'
+      VpcId: !Ref MainVPC
+      SecurityGroupIngress:
+        - FromPort: 0
+          ToPort: 65535
+          IpProtocol: 'tcp'
+          CidrIp: '0.0.0.0/0'
+        - FromPort: 0
+          ToPort: 65535
+          IpProtocol: 'tcp'
+          CidrIpv6: '::/0'
+  
+
+Outputs:
+  MainVPC:
+    Description: The ID of the VPC
+    Value: !Ref MainVPC
+    Export:
+      Name: MainVPC
+
+
+  SGForTesting:
+    Description: The ID of the subnet2
+    Value: !Ref SGForTesting
+    Export:
+      Name: SGForTesting
+
+  PublicSubnetA:
+    Description: The ID of the subnet1
+    Value: !Ref PublicSubnetA
+    Export:
+      Name: PublicSubnetA
+
+  PublicSubnetB:
+    Description: The ID of the subnet2
+    Value: !Ref PublicSubnetB
+    Export:
+      Name: PublicSubnetB
+
+  PrivateSubnetC:
+    Description: The ID of the subnet1
+    Value: !Ref PrivateSubnetC
+    Export:
+      Name: PrivateSubnetC
+
+  PrivateSubnetD:
+    Description: The ID of the subnet2
+    Value: !Ref PrivateSubnetD
+    Export:
+      Name: PrivateSubnetD
+
+  PrivateSubnetE:
+    Description: The ID of the subnet1
+    Value: !Ref PrivateSubnetE
+    Export:
+      Name: PrivateSubnetE
+
+  PrivateSubnetF:
+    Description: The ID of the subnet2
+    Value: !Ref PrivateSubnetF
+    Export:
+      Name: PrivateSubnetF
+
+
