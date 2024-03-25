@@ -178,7 +178,7 @@ Resources:
 # --------------------------------------------------------------------------------------Security Groups----------------------------------------------------------------------------------------------------------------------------------------------
 
 
-  SGForTesting:
+  Main_SG:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: 'SG de Testing'
@@ -203,11 +203,11 @@ Outputs:
       Name: MainVPC
 
 
-  SGForTesting:
+  Main_SG:
     Description: The ID of the subnet2
-    Value: !Ref SGForTesting
+    Value: !Ref Main_SG
     Export:
-      Name: SGForTesting
+      Name: Main_SG
 
   PublicSubnetA:
     Description: The ID of the subnet1
