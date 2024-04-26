@@ -19,6 +19,8 @@ Resources:
           Value: "MainVPCTI"
         - Key: template
           Value: !Ref TemplateTag
+
+
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
 
@@ -88,7 +90,6 @@ Resources:
     Properties:
       SubnetId: !Ref PublicSubnetB
       RouteTableId: !Ref PublicRouteTable
-
 
   PrivateSubnetC:
     Type: 'AWS::EC2::Subnet'
@@ -168,7 +169,7 @@ Resources:
       - Key: template
         Value: !Ref TemplateTag
 
-  Main_SG:
+  SGForTesting:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: 'SG de Testing'
@@ -193,11 +194,11 @@ Outputs:
       Name: MainVPC
 
 
-  Main_SG:
+  SGForTesting:
     Description: The ID of the subnet2
-    Value: !Ref Main_SG
+    Value: !Ref SGForTesting
     Export:
-      Name: Main_SG
+      Name: SGForTesting
 
   PublicSubnetA:
     Description: The ID of the subnet1
@@ -234,5 +235,3 @@ Outputs:
     Value: !Ref PrivateSubnetF
     Export:
       Name: PrivateSubnetF
-
-
